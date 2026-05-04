@@ -1,0 +1,14 @@
+# Besançon Model smoke-test fixture — 10 synthetic stars.
+# Required by smig/catalogs/validation/test_besancon.py.
+# Column schema must match BesanconProvider._REQUIRED_COLS.
+l_deg,b_deg,dist_kpc,mass_msun,teff_K,log_g,feh,mag_F146_ab,source_id,tile_id
+1.02,-2.98,2.50,1.05,5800.0,4.42,-0.10,18.50,B001,bulge_tile_01
+1.05,-3.01,3.20,0.85,5200.0,4.55,-0.22,19.10,B002,bulge_tile_01
+0.98,-2.95,4.10,1.20,6100.0,4.30, 0.05,17.80,B003,bulge_tile_01
+1.10,-3.10,6.80,0.72,4800.0,4.70,-0.40,21.30,B004,bulge_tile_01
+0.90,-3.05,8.50,0.60,4500.0,4.80,-0.60,22.80,B005,bulge_tile_01
+1.01,-3.02,1.80,1.50,6500.0,4.20, 0.15,17.20,B006,bulge_tile_01
+1.07,-2.93,5.30,0.95,5500.0,4.48,-0.18,20.40,B007,bulge_tile_01
+0.95,-3.08,3.90,1.10,5900.0,4.35,-0.08,18.90,B008,bulge_tile_01
+1.03,-3.00,7.20,0.55,4200.0,4.85,-0.75,23.50,B009,bulge_tile_01
+0.99,-2.97,2.10,1.30,6200.0,4.25, 0.10,17.60,B010,bulge_tile_01

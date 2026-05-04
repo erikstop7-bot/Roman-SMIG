@@ -1,0 +1,113 @@
+# smig/config/simulation_fast_dev.yaml
+# =====================================
+# DEVELOPMENT-ONLY simulation profile for SMIG v2 Phase 2.
+#
+# WARNING: this profile trades correctness for runtime.  It is NOT a release
+# gate, NOT a validation profile, and MUST NOT be used to generate any data
+# whose downstream interpretation depends on detector-faithful PSF or DIA
+# residuals.  Use this profile only for:
+#
+#   * iterative development (fast smoke tests, schema plumbing checks)
+#   * memory-bounded local debugging
+#   * profiling / cache-warming experiments
+#
+# What is intentionally weakened compared to simulation_science.yaml:
+#
+#   * psf.oversample reduced from 4 -> 2 (coarser oversampled grid)
+#   * psf.n_wavelengths reduced from 10 -> 2 (single short/long quadrature)
+#   * psf.fov_native_pixels reduced (smaller PSF support; risk of clipping)
+#   * dia.reference_processing="ideal_gaussian" (skips H4RG10Detector chain
+#     on every reference epoch — no IPC, charge diffusion, or Poisson match
+#     between reference and science)
+#   * dia.reference_jitter_mode="shared" (single jitter realization for the
+#     entire reference stack — kills jitter-ensemble averaging)
+#
+# All correctness tests (PSF rim energy, AC-D3/AC-D4 null and RMS guarantees,
+# AC-D4/AC-5 flux recovery) are expected to be evaluated under
+# simulation_science.yaml.  Any tests parametrized over both profiles must
+# document explicitly which assertions are weakened in fast_dev.
+
+detector:
+  schema_version: "2.0"
+
+  geometry:
+    nx: 256                       # Must be >= dia.context_stamp_size
+    ny: 256
+    pixel_pitch_um: 10.0
+    pixel_scale_arcsec: 0.11
+
+  electrical:
+    full_well_electrons: 100000.0
+    gain_e_per_adu: 1.5
+    read_noise_cds_electrons: 12.0
+    read_noise_effective_electrons: 5.0
+    dark_current_e_per_s: 0.01
+
+  readout:
+    n_ramp_reads: 9
+    frame_time_s: 5.85
+    exposure_time_s: 46.8
+
+  charge_diffusion:
+    diffusion_length_factor: 0.1
+    bfe_coupling_coeff: 1.0e-6
+
+  ipc:
+    ipc_kernel_size: 9
+    ipc_field_dependent: true
+    ipc_alpha_center: 0.02
+    ipc_diagonal_fraction: 0.1
+    sca_id: 1
+    ipc_kernel_path: null
+
+  persistence:
+    tau_short_s: 100.0
+    tau_long_s: 1000.0
+    amp_short: 0.005
+    amp_long: 0.001
+
+  nonlinearity:
+    coefficients: [1.0, -2.7e-6, 7.8e-12]
+    saturation_flag_threshold: 0.85
+
+  environment:
+    jitter_mas_per_axis: 5.0
+    sky_background_mag_per_arcsec2: 22.5
+
+  noise:
+    one_over_f_alpha: 1.0
+    one_over_f_amplitude: 10.0
+    rts_pixel_fraction: 0.001
+    rts_amplitude_range_e: [5.0, 50.0]
+    cr_rate_per_cm2_per_s: 5.0
+    cr_cluster_size_range: [1, 10]
+
+
+psf:
+  filter_name: W146
+  oversample: 2                   # Reduced from science=4 — faster PSF compute
+  n_wavelengths: 2                # Reduced from science=10 — coarser bandpass
+  jitter_rms_mas: 5.0
+  cache_dir: null
+  wavelength_range_um: [0.93, 2.00]
+  fov_native_pixels: 64           # Reduced from science=256 — risk of rim clipping
+  psf_edge_taper_pixels: 4.0      # Cosine taper masks the smaller-FOV rim artefacts
+
+
+rendering: {}
+
+
+crowded_field:
+  stamp_size: 64
+  pixel_scale_arcsec: 0.11
+  brightness_cap_mag: null
+  neighbor_mag_limit: 26.0
+
+
+dia:
+  n_reference_epochs: 5           # Reduced from science=30 — much faster ref build
+  context_stamp_size: 256
+  science_stamp_size: 64
+  subtraction_method: identity            # Match science default (direct sci-ref); fast_dev tracks the science DIA path
+  reference_processing: ideal_gaussian   # Skip detector chain on reference — fast_dev only
+  reference_jitter_mode: shared          # Single PSF jitter realization for whole reference stack

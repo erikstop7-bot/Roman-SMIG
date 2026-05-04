@@ -1,0 +1,117 @@
+# smig/config/simulation_science_oversample2.yaml
+# ================================================
+# EXPERIMENTAL — oversample=2 ablation candidate.
+#
+# This config is IDENTICAL to simulation_science.yaml except that
+# psf.oversample is reduced from 4 to 2.  It exists solely to support
+# A/B benchmarking against the production science profile; it is NOT
+# a release-gate config and MUST NOT be used for training-data generation
+# or validation runs.
+#
+# Purpose:
+#   The oversampled PSF grid has side length fov_native_pixels * oversample:
+#     oversample=4 → 256 * 4 = 1024-pixel grid
+#     oversample=2 → 256 * 2 = 512-pixel grid
+#   Halving the grid potentially cuts PSF FFT costs by ~4x.  This config
+#   exists to measure that speedup and quantify any correctness impact.
+#
+# What differs from simulation_science.yaml:
+#   * psf.oversample: 4  →  2
+#
+# All other settings are byte-for-byte identical to simulation_science.yaml.
+# The production config (simulation_science.yaml) is NOT modified.
+#
+# Acceptance criteria (see scripts/compare_science_profiles.py):
+#   PASS if null central SNR behavior is comparable to baseline, no
+#   systematic null residuals, lensed flux recovery within 10%, and PSF
+#   shape differences are small and documented.
+#   FAIL if null residuals reappear, lensed flux shifts > 10%, PSF core
+#   becomes blocky, rim artifacts increase, or nonfinite values appear.
+#
+# Do not promote this config to simulation_science.yaml without running
+# the full comparison suite and recording the report in the experiment log.
+
+detector:
+  schema_version: "2.0"
+
+  geometry:
+    nx: 256                       # Overridden from 4096 — matches dia.context_stamp_size
+    ny: 256                       # Overridden from 4096 — matches dia.context_stamp_size
+    pixel_pitch_um: 10.0          # 10 um HgCdTe pixel pitch (Mosby et al. 2020)
+    pixel_scale_arcsec: 0.11      # WFI wide-field plate scale ~0.11 arcsec/pix
+
+  electrical:
+    full_well_electrons: 100000.0  # ~100 ke- full well (Mosby et al. 2020 Table 1)
+    gain_e_per_adu: 1.5            # System gain; SCA-dependent, 1.5 e-/ADU nominal
+    read_noise_cds_electrons: 12.0 # Single CDS read noise RMS (Mosby et al. 2020)
+    read_noise_effective_electrons: 5.0  # Effective noise after optimal ramp sampling
+    dark_current_e_per_s: 0.01    # Dark current at ~95 K operating temperature
+
+  readout:
+    n_ramp_reads: 9               # 9 total reads = 1 reset + 8 science samples
+    frame_time_s: 5.85            # Full-array read time at ~3.2 MHz pixel rate
+    exposure_time_s: 46.8         # (n_ramp_reads - 1) x frame_time_s = 8 x 5.85 s
+
+  charge_diffusion:
+    diffusion_length_factor: 0.1  # sigma = pixel_pitch_um * factor (Gaussian diffusion)
+    bfe_coupling_coeff: 1.0e-6    # BFE coupling: delta_Q = coeff * (Q/Q_FW) * Q
+
+  ipc:
+    ipc_kernel_size: 9            # 9x9 kernel (odd); captures next-nearest neighbours
+    ipc_field_dependent: true     # Use HDF5 spatially-varying map when available
+    ipc_alpha_center: 0.02        # alpha ~2% coupling at SCA centre (Mosby et al. 2020)
+    ipc_diagonal_fraction: 0.1    # Diagonal coupling = alpha * 0.1 (H4RG-10 lab value)
+    sca_id: 1                     # SCA identifier (1–18); HDF5 dataset lookup key
+    ipc_kernel_path: null         # Path to HDF5 calibration file; null → analytic kernel
+
+  persistence:
+    tau_short_s: 100.0            # Short-lived trap population decay constant (s)
+    tau_long_s: 1000.0            # Long-lived trap population decay constant (s)
+    amp_short: 0.005              # Short-component amplitude (fraction of full well)
+    amp_long: 0.001               # Long-component amplitude (fraction of full well)
+
+  nonlinearity:
+    coefficients: [1.0, -2.7e-6, 7.8e-12]
+    saturation_flag_threshold: 0.85  # Flag pixels reaching 85% of full well
+
+  environment:
+    jitter_mas_per_axis: 5.0          # Roman pointing requirement (as-built ~14 mas)
+    sky_background_mag_per_arcsec2: 22.5  # Zodiacal-light background (AB mag/arcsec^2)
+
+  noise:
+    one_over_f_alpha: 1.0             # Classical 1/f noise spectral index
+    one_over_f_amplitude: 10.0        # 1/f noise amplitude in e- RMS per read
+    rts_pixel_fraction: 0.001         # Fraction of pixels with RTS noise (~0.1% at 95 K)
+    rts_amplitude_range_e: [5.0, 50.0]  # RTS half-amplitude range in electrons (min, max)
+    cr_rate_per_cm2_per_s: 5.0        # Cosmic ray rate at Roman L2 (solar-minimum GCR)
+    cr_cluster_size_range: [1, 10]    # CR cluster footprint range in pixels (min, max)
+
+
+psf:
+  filter_name: W146               # Roman WFI wide-band filter covering 0.93–2.00 um
+  oversample: 2                   # EXPERIMENTAL: reduced from science=4 (grid 512 vs 1024)
+  n_wavelengths: 10               # Wavelength quadrature points across filter bandpass
+  jitter_rms_mas: 5.0             # Pointing jitter RMS added in quadrature to PSF
+  cache_dir: null                 # PSF cache directory; null disables caching
+  wavelength_range_um: [0.93, 2.00]  # W146 filter wavelength range in micrometres
+  fov_native_pixels: 256          # PSF stamp = dia.context_stamp_size; must match to avoid rectangular clipping
+  psf_edge_taper_pixels: null     # Cosine edge taper width in pixels; null disables (default).
+
+
+rendering: {}                     # RenderingConfig — fields TBD in Phase 2 implementation
+
+
+crowded_field:
+  stamp_size: 64                  # Science output stamp side length in pixels
+  pixel_scale_arcsec: 0.11        # Native WFI plate scale (matches detector geometry)
+  brightness_cap_mag: null        # No saturation exclusion cap by default
+  neighbor_mag_limit: 26.0        # Draw neighbours to ~Roman 5sigma depth
+
+
+dia:
+  n_reference_epochs: 30          # Reference stack depth (pre-event co-add)
+  context_stamp_size: 256         # Context/template stamp side length in pixels
+  science_stamp_size: 64          # Difference-image science stamp side length in pixels
+  subtraction_method: identity      # Direct science - reference (default for matched-reference simulations).
+  reference_processing: detector_matched  # Full detector chain on every reference epoch — the trusted path
+  reference_jitter_mode: per_epoch        # Independent jitter realization per reference epoch

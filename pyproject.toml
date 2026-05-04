@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smig"
+version = "2.0.0a1"
+description = "SMIG v2 — Roman WFI H4RG-10 detector simulator for microlensing event classification"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pydantic>=2.0",
+    "pyyaml",
+    "h5py",
+    "VBBinaryLensing==3.7.0",
+]
+
+[project.optional-dependencies]
+phase2 = [
+    "galsim",
+    "webbpsf",
+    "synphot",
+    "poppy",
+    "pandas",
+    "astropy>=5.0",
+]
+phase3-test = [
+    "MulensModel",
+]
+phase3-dev = [
+    "matplotlib",
+]
+dev = [
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["smig*"]
+
+[tool.pytest.ini_options]
+testpaths = ["smig", "scripts"]
+markers = [
+    "slow: marks tests as slow (skips strict timing assertion in CI when CI env var is set)",
+    "integration: marks integration tests",
+]

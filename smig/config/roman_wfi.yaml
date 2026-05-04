@@ -1,0 +1,71 @@
+# smig/config/roman_wfi.yaml
+# ==========================
+# Default detector configuration for the Nancy Grace Roman Space Telescope
+# Wide Field Instrument (WFI) H4RG-10 sensor channel array (SCA).
+#
+# Values are cross-referenced against:
+#   - Akeson et al. (2019), "The Wide Field Infrared Survey Telescope:
+#     100 Hubble Space Telescopes for the 2020s", arXiv:1902.05569
+#   - Roman WFI Reference Data
+#   - Mosby et al. (2020), "Properties and characteristics of the H4RG-10
+#     detector for the Nancy Grace Roman Space Telescope" (SPIE 11454)
+#
+# Inline comments reference the parameter source where known.
+# All values must satisfy the validation constraints in smig/config/schemas.py.
+
+schema_version: "2.0"
+
+geometry:
+  nx: 4096                      # H4RG-10 native array width; includes reference pixels
+  ny: 4096                      # H4RG-10 native array height; includes reference pixels
+  pixel_pitch_um: 10.0          # 10 um HgCdTe pixel pitch (Mosby et al. 2020)
+  pixel_scale_arcsec: 0.11      # WFI wide-field plate scale ~0.11 arcsec/pix
+
+electrical:
+  full_well_electrons: 100000.0  # ~100 ke- full well (Mosby et al. 2020 Table 1)
+  gain_e_per_adu: 1.5            # System gain; SCA-dependent, 1.5 e-/ADU nominal
+  read_noise_cds_electrons: 12.0 # Single CDS read noise RMS (Mosby et al. 2020)
+  read_noise_effective_electrons: 5.0  # Effective noise after optimal ramp sampling
+  dark_current_e_per_s: 0.01    # Dark current at ~95 K operating temperature
+
+readout:
+  n_ramp_reads: 9               # Total reads including initial reset frame (9 total = 1 reset + 8 science samples)
+  frame_time_s: 5.85            # Full-array read time (4096x4096 at ~3.2 MHz pixel rate)
+  exposure_time_s: 46.8         # (n_ramp_reads - 1) x frame_time_s = 8 x 5.85 s
+
+charge_diffusion:
+  diffusion_length_factor: 0.1   # sigma = pixel_pitch_um * factor (static Gaussian diffusion)
+  bfe_coupling_coeff: 1.0e-6     # BFE coupling: delta_Q = coeff * (Q/Q_FW) * Q per iteration
+
+ipc:
+  ipc_kernel_size: 9            # 9x9 kernel (odd); captures up to next-nearest neighbours
+  ipc_field_dependent: true     # Use HDF5 spatially-varying map when available
+  ipc_alpha_center: 0.02        # alpha ~2% coupling at SCA centre (Mosby et al. 2020)
+  sca_id: 1                     # SCA identifier (1–18); HDF5 dataset lookup key
+  ipc_kernel_path: null          # Path to HDF5 calibration file; null → analytic kernel
+
+persistence:
+  tau_short_s: 100.0            # Short-lived trap population decay constant (s)
+  tau_long_s: 1000.0            # Long-lived trap population decay constant (s)
+  amp_short: 0.005              # Short-component amplitude (fraction of full well)
+  amp_long: 0.001               # Long-component amplitude (fraction of full well)
+
+nonlinearity:
+  # Polynomial coefficients applied to Q_norm = e- / full_well_electrons
+  # Index 0 = constant, index 1 = linear, index 2 = quadratic, ...
+  # Coefficients describe mild sublinearity consistent with H4RG-10 lab data.
+  # Pydantic coerces this YAML list to tuple[float, ...] on validation.
+  coefficients: [1.0, -2.7e-6, 7.8e-12]
+  saturation_flag_threshold: 0.85  # Flag pixels reaching 85% of full well
+
+environment:
+  jitter_mas_per_axis: 5.0         # Roman pointing requirement (as-built ~14 mas)
+  sky_background_mag_per_arcsec2: 22.5  # Zodiacal-light background (AB mag/arcsec^2)
+
+noise:
+  one_over_f_alpha: 1.0            # Classical 1/f noise spectral index (typical H4RG-10: 0.8–1.2)
+  one_over_f_amplitude: 10.0       # 1/f noise amplitude in e- RMS per read
+  rts_pixel_fraction: 0.001        # Fraction of pixels with RTS noise (~0.1% at 95 K)
+  rts_amplitude_range_e: [5.0, 50.0]  # RTS half-amplitude range in electrons (min, max)
+  cr_rate_per_cm2_per_s: 5.0       # Cosmic ray rate at Roman L2 (solar-minimum GCR flux)
+  cr_cluster_size_range: [1, 10]   # CR cluster footprint range in pixels (min, max)

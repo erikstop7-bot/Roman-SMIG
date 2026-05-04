@@ -1,0 +1,25 @@
+# Phase 3.5 smoke config — 16 events, 2 shards of 8, 4 workers.
+#
+# strict_ld_grid: false avoids ClaretGridError on edge sources in the
+# synthetic catalog (whose log_g range of [1.0, 5.0] can straddle grid
+# boundaries for high-Teff stars with the H-band LD proxy).
+
+simulation_config_path: smig/config/simulation_science.yaml
+output_dir: outputs/phase3_smoke
+n_events: 16
+shard_size: 8
+n_workers: 4
+n_science_epochs: 30
+cadence_days: 0.0104
+observation_start_mjd: 60000.0
+sky_background_e_per_s: 0.5
+master_seed: 20260416
+field_center_l_deg: 1.0
+field_center_b_deg: -3.0
+catalog_provider: synthetic
+strict_ld_grid: false
+event_class_distribution:
+  PSPL: 0.5
+  FSPL_STAR: 0.2
+  PLANETARY_CAUSTIC: 0.2
+  STELLAR_BINARY: 0.1

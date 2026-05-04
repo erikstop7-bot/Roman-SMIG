@@ -1,0 +1,27 @@
+simulation_config_path: smig/config/simulation_science.yaml
+output_dir: outputs/phase3_sprint_lom_source
+n_events: 5000
+shard_size: 500
+n_workers: 4
+n_science_epochs: 30
+# cadence_days: decimated Roman bulge "season" — 30 × 2.5 d = 72.5 d window
+# matches the canonical 72-day season length.  The native Roman 15-min cadence
+# (0.0104 d) over only 30 epochs gives a 7.2-hour baseline, which is far too
+# short for linear LOM rates of 0.02–0.10 θ_E/yr to produce a Δs above the
+# VBBL Tol of 1e-3 (max Δs ≈ 8e-5 θ_E — invisible).  Keeping the season-scale
+# baseline with 30 epochs is the minimum that lets the sprint actually
+# distinguish LOM from static at the memo's three rate settings.
+cadence_days: 2.5
+observation_start_mjd: 60000.0
+sky_background_e_per_s: 0.5
+master_seed: 20260417        # +1 from static — avoids event_id collisions
+field_center_l_deg: 1.0
+field_center_b_deg: -3.0
+catalog_provider: synthetic
+strict_ld_grid: false
+event_class_distribution:
+  PSPL: 0.20                # 1000 null
+  FSPL_STAR: 0.00           # not needed in LOM set
+  PLANETARY_CAUSTIC: 0.30   # 1500
+  STELLAR_BINARY: 0.30      # 1500
+  HIGH_MAGNIFICATION_CUSP: 0.20  # 1000
