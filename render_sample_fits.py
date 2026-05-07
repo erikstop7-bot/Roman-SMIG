@@ -57,13 +57,12 @@ def main():
             print(f"Successfully injected custom catalog into simulator.{attr_name}")
             break
     # 5. Run the end-to-end event
-    # 5. Run the end-to-end event
     print(f"Simulating {epochs} epochs through optics and detector physics...")
     event_output = simulator.simulate_event(
         event_id="test_ob260001",
         source_params_sequence=source_params_seq,
         timestamps_mjd=timestamps_mjd,
-        backgrounds_e_per_s=backgrounds_e_per_s  # <-- ADD THIS LINE
+        backgrounds_e_per_s=backgrounds_e_per_s 
     )
     # 6. Save outputs to FITS
     output_dir = Path("sample_fits_output")
