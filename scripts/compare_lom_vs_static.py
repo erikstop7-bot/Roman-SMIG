@@ -1,8 +1,4 @@
-"""Compare a LOM-ablation shard set against a static Phase 3 baseline.
-
-Computes the two primary sprint metrics from the Phase 3 → 4 boundary memo
-(Section 6 — Sprint metrics and acceptance):
-
+"""
 1. Physics residual CDF (memo item "Residual magnitude CDF"):
      For every LOM event, recompute the magnification curve A_static(t)
      with ds_dt = dalpha_dt = 0 and A_lom(t) with the per-event LOM rates,
