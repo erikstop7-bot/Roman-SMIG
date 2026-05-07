@@ -22,7 +22,7 @@ Design constraints
 * The JSON sidecar is written atomically: data is flushed and fsync'd to
   a temporary file, then os.replace() renames it to the target.  The temp
   file is always outside the with-block before os.replace() is called,
-  which is required for correctness on Windows (os.replace() raises
+  which is required for correctness on Windows(os.replace() raises
   PermissionError if the file handle is still open).
 * The sidecar filename includes a 6-char SHA-256 hash of the raw event_id
   appended to the sanitized name to guarantee uniqueness when two event IDs
