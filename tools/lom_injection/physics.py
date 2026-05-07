@@ -293,7 +293,7 @@ def verify_static_equivalence(
     Calling this function with representative binary-event parameters once at
     runner startup immediately catches sign-convention mismatches, tau/beta
     confusions, or VBBL version regressions — all of which would produce a
-    systematic bias invisible in the physics unit tests alone.
+    systematic bias invisible in the physics unit tests alone
 
     Parameters
     ----------
