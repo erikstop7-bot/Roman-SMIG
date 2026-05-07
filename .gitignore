@@ -27,13 +27,6 @@ env/
 .DS_Store
 Thumbs.db
 
-# Claude Code
-.claude/
-CLAUDE.md
-
-# Graphify
-graphify-out/
-
 # Project outputs / data (large, generated)
 outputs/
 datasets/
